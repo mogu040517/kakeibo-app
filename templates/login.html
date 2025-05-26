@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block content %}
+<div class="login-box">
+  <h1>ログイン</h1>
+  <form method="POST" action="{{ url_for('login') }}">
+    <label for="username">ユーザー名</label>
+    <input type="text" id="username" name="username" required>
+
+    <label for="password">パスワード</label>
+    <input type="password" id="password" name="password" required>
+
+    <button type="submit">ログイン</button>
+  </form>
+
+  <div class="login-links">
+    <a href="{{ url_for('signup') }}">アカウントを作成</a>
+  </div>
+</div>
+{% endblock %}

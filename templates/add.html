@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}家計簿追加{% endblock %}
+
+{% block content %}
+<div class="add-container">
+  <h2>家計簿を追加</h2>
+  <form method="POST">
+    <label>日付：
+      <input type="date" name="date" required>
+    </label>
+
+    <label>カテゴリ：
+      <input type="text" name="category" required>
+    </label>
+
+    <label>金額：
+      <input type="number" name="amount" required>
+    </label>
+
+    <label>種類：
+      <select name="type">
+        <option value="支出">支出</option>
+        <option value="収入">収入</option>
+      </select>
+    </label>
+
+    <label>メモ：
+      <input type="text" name="memo">
+    </label>
+
+    <input type="submit" value="追加">
+  </form>
+
+  <div class="back-button">
+    <a href="{{ url_for('main') }}">
+      <button>メインに戻る</button>
+    </a>
+  </div>
+</div>
+{% endblock %}

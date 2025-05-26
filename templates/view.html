@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}収支一覧{% endblock %}
+
+{% block content %}
+<div class="view-container">
+  <h2>収支合計</h2>
+  <ul>
+    <li>収入合計：{{ total_income }} 円</li>
+    <li>必要経費合計（交通費）：{{ total_necessary }} 円</li>
+    <li>実質収入（収入 - 必要経費）：{{ net_income }} 円</li>
+    <li>支出合計（生活費全体）：{{ total_expense }} 円</li>
+    <li>差額（収入 - 支出）：{{ balance }} 円</li>
+  </ul>
+
+  <h2>収入一覧</h2>
+  <table>
+    <tr>
+      <th>日付</th><th>カテゴリ</th><th>金額</th><th>メモ</th><th>削除</th>
+    </tr>
+    {% for item in incomes %}
+    <tr>
+      <td>{{ item.date }}</td>
+      <td>{{ item.category }}</td>
+      <td>{{ item.amount }}</td>
+      <td>{{ item.memo }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('delete', item_id=item.id) }}" onsubmit="return confirm('この収入データを削除しますか？');">
+          <button type="submit">削除</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>支出一覧</h2>
+  <table>
+    <tr>
+      <th>日付</th><th>カテゴリ</th><th>金額</th><th>メモ</th><th>削除</th>
+    </tr>
+    {% for item in expenses %}
+    <tr>
+      <td>{{ item.date }}</td>
+      <td>{{ item.category }}</td>
+      <td>{{ item.amount }}</td>
+      <td>{{ item.memo }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('delete', item_id=item.id) }}" onsubmit="return confirm('削除しますか？');">
+          <button type="submit">削除</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="back-button">
+    <a href="{{ url_for('main') }}">
+      <button>メインに戻る</button>
+    </a>
+  </div>
+</div>
+{% endblock %}

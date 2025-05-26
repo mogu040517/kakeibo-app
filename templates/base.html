@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}家計簿アプリ{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+
+  <!-- ナビバー共通化 -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <a href="{{ url_for('main') }}">家計簿</a>
+      <a href="{{ url_for('add') }}">追加</a>
+      <a href="{{ url_for('view') }}">一覧</a>
+      <a href="{{ url_for('monthly') }}">月別集計</a>
+    </div>
+    <div class="navbar-right">
+      {% if session.username %}
+        <span>こんにちは、{{ session.username }} さん</span>
+        <a href="{{ url_for('logout') }}" class="logout-btn">ログアウト</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ページごとに差し込む部分 -->
+  <div class="page-content">
+    {% block content %}
+    {% endblock %}
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}メインページ{% endblock %}
+
+{% block content %}
+<div class="main-container">
+  <h1>家計簿アプリ メインページ</h1>
+  <ul>
+    <li><a href="{{ url_for('add') }}">支出/収入の追加</a></li>
+    <li><a href="{{ url_for('view') }}">一覧表示</a></li>
+    <li><a href="{{ url_for('monthly') }}">月別集計</a></li>
+  </ul>
+</div>
+{% endblock %}

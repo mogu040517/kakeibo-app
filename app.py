@@ -92,7 +92,7 @@ def delete(item_id):
 @app.route('/view')
 def view():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     user_id = session['user_id']
     # 収入データ取得
     cursor.execute("SELECT * FROM kakeibo WHERE type = '収入' AND user_id = ? ORDER BY date DESC", (user_id,))
@@ -128,7 +128,6 @@ def view():
 
 # === 月別集計表示 ===
 @app.route('/monthly')
-@app.route('/monthly')
 def monthly():
     user_id = session.get('user_id')
 
@@ -136,11 +135,10 @@ def monthly():
         return redirect('/login')  # 未ログインならログイン画面へ
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     necessary_categories = ['交通費']
 
-    # ✅ 修正済: セミコロン削除 + パラメータ渡し
     cursor.execute("""
         SELECT
             strftime('%Y-%m', date) AS ym,
@@ -174,10 +172,10 @@ def monthly():
 
     sorted_months = sorted(monthly.items())
 
-    # ✅ 月別支出の取得
+    #月別支出
     cursor.execute("""
         SELECT
-            DATE_FORMAT(date, '%Y-%m') AS ym,
+            strftime('%Y-%m', date) AS ym,
             SUM(amount) AS total_expense
         FROM kakeibo
         WHERE type = '支出' AND user_id = ?
@@ -235,7 +233,7 @@ def login():
 
         # データベースから該当ユーザーを探す
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = cursor.fetchone()
         cursor.close()

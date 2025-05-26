@@ -1,9 +1,9 @@
 from collections import defaultdict
-import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
+import sqlite3
 
 load_dotenv()
 
@@ -14,12 +14,32 @@ app.secret_key = os.getenv('SECRET_KEY')
 
 # === DB接続関数 ===
 def get_db_connection():
-    return mysql.connector.connect(
-        host=os.getenv('DB_HOST'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        database=os.getenv('DB_NAME')
-    )
+    conn = sqlite3.connect(os.getenv('DB_NAME', 'data.db'))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    with conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS kakeibo (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT,
+                category TEXT,
+                amount INTEGER,
+                type TEXT,
+                memo TEXT,
+                user_id INTEGER
+            )
+        ''')
+    conn.close()
 
 
 # === メインページ ===
@@ -47,7 +67,7 @@ def add():
         cursor = conn.cursor()
         user_id = session['user_id']
         cursor.execute(
-            "INSERT INTO kakeibo (date, category, amount, type, memo, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO kakeibo (date, category, amount, type, memo, user_id) VALUES (?, ?, ?, ?, ?, ?)",
             (date, category, amount, type_, memo, user_id)
         )
 
@@ -62,7 +82,7 @@ def add():
 def delete(item_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM kakeibo WHERE id = %s", (item_id,))
+    cursor.execute("DELETE FROM kakeibo WHERE id = ?", (item_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -75,12 +95,12 @@ def view():
     cursor = conn.cursor(dictionary=True)
     user_id = session['user_id']
     # 収入データ取得
-    cursor.execute("SELECT * FROM kakeibo WHERE type = '収入' AND user_id = %s ORDER BY date DESC", (user_id,))
+    cursor.execute("SELECT * FROM kakeibo WHERE type = '収入' AND user_id = ? ORDER BY date DESC", (user_id,))
     incomes = cursor.fetchall()
     total_income = sum(item['amount'] for item in incomes)
 
     # 支出データ取得
-    cursor.execute("SELECT * FROM kakeibo WHERE type = '支出' AND user_id = %s ORDER BY date DESC", (user_id,))
+    cursor.execute("SELECT * FROM kakeibo WHERE type = '支出' AND user_id = ? ORDER BY date DESC", (user_id,))
     expenses = cursor.fetchall()
     total_expense = sum(item['amount'] for item in expenses)
 
@@ -123,12 +143,12 @@ def monthly():
     # ✅ 修正済: セミコロン削除 + パラメータ渡し
     cursor.execute("""
         SELECT
-            DATE_FORMAT(date, '%Y-%m') AS ym,
+            strftime('%Y-%m', date) AS ym,
             type,
             category,
             amount
         FROM kakeibo
-        WHERE user_id = %s
+        WHERE user_id = ?
     """, (user_id,))
     records = cursor.fetchall()
 
@@ -160,7 +180,7 @@ def monthly():
             DATE_FORMAT(date, '%Y-%m') AS ym,
             SUM(amount) AS total_expense
         FROM kakeibo
-        WHERE type = '支出' AND user_id = %s
+        WHERE type = '支出' AND user_id = ?
         GROUP BY ym
         ORDER BY ym ASC
     """, (user_id,))
@@ -192,7 +212,7 @@ def signup():
         cursor = conn.cursor()
         try:
             cursor.execute(
-                "INSERT INTO users (username, password_hash) VALUES (%s, %s)",
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
                 (username, hashed_pw)
             )
             conn.commit()
@@ -216,7 +236,7 @@ def login():
         # データベースから該当ユーザーを探す
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -236,6 +256,6 @@ def logout():
     session.clear()  # セッションを全削除（ログアウト）
     return redirect('/login')  # ログインページへ戻す
 
-# === アプリ起動 ===
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)

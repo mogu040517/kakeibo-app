@@ -19,8 +19,6 @@ def get_db_connection():
         password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME")
     )
-
-# === テーブル作成 ===
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -45,6 +43,14 @@ def init_db():
     conn.commit()
     cursor.close()
     conn.close()
+
+
+# === テーブル作成 ===
+@app.route('/init')
+def initialize():
+    init_db()
+    return "Database initialized!"
+
 
 # === 各ルート ===
 @app.route('/')
@@ -228,5 +234,4 @@ def logout():
     return redirect('/login')
 
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True)
+    pass

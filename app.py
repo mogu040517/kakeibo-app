@@ -58,9 +58,7 @@ def initialize():
 # === 各ルート ===
 @app.route('/')
 def main():
-    if 'user_id' not in session:
-        return redirect('/login')
-    return render_template('main.html')
+    return f"ようこそ {session.get('username', 'ゲスト')} さん！"
 
 # @app.route('/add', methods=['GET', 'POST'])
 # def add():

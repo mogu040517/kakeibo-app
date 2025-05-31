@@ -132,64 +132,64 @@ def view():
         balance=total_income - total_expense
     )
 
-@app.route('/monthly')
-def monthly():
-    user_id = session.get('user_id')
-    if not user_id:
-        return redirect('/login')
+# @app.route('/monthly')
+# def monthly():
+#     user_id = session.get('user_id')
+#     if not user_id:
+#         return redirect('/login')
 
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT
-            DATE_FORMAT(date, '%%Y-%%m') AS ym,
-            type,
-            category,
-            amount
-        FROM kakeibo
-        WHERE user_id = %s
-    """, (user_id,))
-    records = cursor.fetchall()
+#     cursor.execute("""
+#         SELECT
+#             DATE_FORMAT(date, '%%Y-%%m') AS ym,
+#             type,
+#             category,
+#             amount
+#         FROM kakeibo
+#         WHERE user_id = %s
+#     """, (user_id,))
+#     records = cursor.fetchall()
 
-    necessary_categories = ['交通費']
-    monthly_data = defaultdict(lambda: {'income': 0, 'expense': 0, 'necessary': 0, 'net_income': 0})
+#     necessary_categories = ['交通費']
+#     monthly_data = defaultdict(lambda: {'income': 0, 'expense': 0, 'necessary': 0, 'net_income': 0})
 
-    for r in records:
-        ym = r['ym']
-        if r['type'] == '収入':
-            monthly_data[ym]['income'] += r['amount']
-        elif r['type'] == '支出':
-            monthly_data[ym]['expense'] += r['amount']
-            if r['category'] in necessary_categories:
-                monthly_data[ym]['necessary'] += r['amount']
+#     for r in records:
+#         ym = r['ym']
+#         if r['type'] == '収入':
+#             monthly_data[ym]['income'] += r['amount']
+#         elif r['type'] == '支出':
+#             monthly_data[ym]['expense'] += r['amount']
+#             if r['category'] in necessary_categories:
+#                 monthly_data[ym]['necessary'] += r['amount']
 
-    for ym, data in monthly_data.items():
-        data['net_income'] = data['income'] - data['necessary']
+#     for ym, data in monthly_data.items():
+#         data['net_income'] = data['income'] - data['necessary']
 
-    sorted_months = sorted(monthly_data.items())
+#     sorted_months = sorted(monthly_data.items())
 
-    cursor.execute("""
-        SELECT
-            DATE_FORMAT(date, '%%Y-%%m') AS ym,
-            SUM(amount) AS total_expense
-        FROM kakeibo
-        WHERE type = '支出' AND user_id = %s
-        GROUP BY ym
-        ORDER BY ym ASC
-    """, (user_id,))
-    rows = cursor.fetchall()
-    labels = [row['ym'] for row in rows]
-    expenses = [row['total_expense'] for row in rows]
+#     cursor.execute("""
+#         SELECT
+#             DATE_FORMAT(date, '%%Y-%%m') AS ym,
+#             SUM(amount) AS total_expense
+#         FROM kakeibo
+#         WHERE type = '支出' AND user_id = %s
+#         GROUP BY ym
+#         ORDER BY ym ASC
+#     """, (user_id,))
+#     rows = cursor.fetchall()
+#     labels = [row['ym'] for row in rows]
+#     expenses = [row['total_expense'] for row in rows]
 
-    cursor.close()
-    conn.close()
+#     cursor.close()
+#     conn.close()
 
-    return render_template('monthly.html',
-        monthly_data=sorted_months,
-        labels=labels,
-        expenses=expenses
-    )
+#     return render_template('monthly.html',
+#         monthly_data=sorted_months,
+#         labels=labels,
+#         expenses=expenses
+#     )
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():

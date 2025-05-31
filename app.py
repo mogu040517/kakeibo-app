@@ -49,13 +49,11 @@ def init_db():
     cursor.close()
     conn.close()
 
-
 # === テーブル作成 ===
 @app.route('/init')
 def initialize():
     init_db()
     return "Database initialized!"
-
 
 # === 各ルート ===
 @app.route('/')
@@ -64,30 +62,30 @@ def main():
         return redirect('/login')
     return render_template('main.html')
 
-@app.route('/add', methods=['GET', 'POST'])
-def add():
-    if 'user_id' not in session:
-        return redirect('/login')
+# @app.route('/add', methods=['GET', 'POST'])
+# def add():
+#     if 'user_id' not in session:
+#         return redirect('/login')
 
-    if request.method == 'POST':
-        date = request.form['date']
-        category = request.form['category']
-        amount = int(request.form['amount'])
-        type_ = request.form['type'].strip()
-        memo = request.form['memo']
-        user_id = session['user_id']
+#     if request.method == 'POST':
+#         date = request.form['date']
+#         category = request.form['category']
+#         amount = int(request.form['amount'])
+#         type_ = request.form['type'].strip()
+#         memo = request.form['memo']
+#         user_id = session['user_id']
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO kakeibo (date, category, amount, type, memo, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
-            (date, category, amount, type_, memo, user_id)
-        )
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return redirect('/add')
-    return render_template('add.html')
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute(
+#             "INSERT INTO kakeibo (date, category, amount, type, memo, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
+#             (date, category, amount, type_, memo, user_id)
+#         )
+#         conn.commit()
+#         cursor.close()
+#         conn.close()
+#         return redirect('/add')
+#     return render_template('add.html')
 
 @app.route('/delete/<int:item_id>', methods=['POST'])
 def delete(item_id):
@@ -99,38 +97,38 @@ def delete(item_id):
     conn.close()
     return redirect('/view')
 
-@app.route('/view')
-def view():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    user_id = session['user_id']
+# @app.route('/view')
+# def view():
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
+#     user_id = session['user_id']
 
-    cursor.execute("SELECT * FROM kakeibo WHERE type = '収入' AND user_id = %s ORDER BY date DESC", (user_id,))
-    incomes = cursor.fetchall()
-    total_income = sum(item['amount'] for item in incomes)
+#     cursor.execute("SELECT * FROM kakeibo WHERE type = '収入' AND user_id = %s ORDER BY date DESC", (user_id,))
+#     incomes = cursor.fetchall()
+#     total_income = sum(item['amount'] for item in incomes)
 
-    cursor.execute("SELECT * FROM kakeibo WHERE type = '支出' AND user_id = %s ORDER BY date DESC", (user_id,))
-    expenses = cursor.fetchall()
-    total_expense = sum(item['amount'] for item in expenses)
+#     cursor.execute("SELECT * FROM kakeibo WHERE type = '支出' AND user_id = %s ORDER BY date DESC", (user_id,))
+#     expenses = cursor.fetchall()
+#     total_expense = sum(item['amount'] for item in expenses)
 
-    necessary_categories = ['交通費']
-    necessary_expenses = [e for e in expenses if e['category'] in necessary_categories]
-    total_necessary = sum(e['amount'] for e in necessary_expenses)
+#     necessary_categories = ['交通費']
+#     necessary_expenses = [e for e in expenses if e['category'] in necessary_categories]
+#     total_necessary = sum(e['amount'] for e in necessary_expenses)
 
-    net_income = total_income - total_necessary
+#     net_income = total_income - total_necessary
 
-    cursor.close()
-    conn.close()
+#     cursor.close()
+#     conn.close()
 
-    return render_template('view.html',
-        incomes=incomes,
-        expenses=expenses,
-        total_income=total_income,
-        total_expense=total_expense,
-        total_necessary=total_necessary,
-        net_income=net_income,
-        balance=total_income - total_expense
-    )
+#     return render_template('view.html',
+#         incomes=incomes,
+#         expenses=expenses,
+#         total_income=total_income,
+#         total_expense=total_expense,
+#         total_necessary=total_necessary,
+#         net_income=net_income,
+#         balance=total_income - total_expense
+#     )
 
 # @app.route('/monthly')
 # def monthly():
